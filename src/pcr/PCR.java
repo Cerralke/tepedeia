@@ -65,12 +65,11 @@ public class PCR {
 
     private static void selectFROMDb() throws SQLException, Exception{
         Statement stmt = conn.createStatement();
-        String sqlPrepare = "CREATE VIEW Catalogues AS SELECT ShipTo, Product, Time, units, sales, cost\n" +
-                            "FROM units_fact_table WHERE Channel='CAT'";
-        stmt.execute(sqlPrepare);
-        conn.commit();
-        
-        String sql = "SELECT ShipTo, Time, units, sales, cost FROM Catalogues";
+        String sql = "WITH "
+                     + "Catalogues AS (SELECT ShipTo, Product, Time, SUM(units) as sum_units, AVG(sales) as avg_sales, cost\n" 
+                        + "FROM units_fact_table "
+                        + "WHERE Channel='CAT' GROUP BY ShipTo) "
+                            + "SELECT ShipTo, Time, sum_units, cost, avg_sales FROM Catalogues";
         ResultSet rs = stmt.executeQuery(sql);
         databaseTab = new ArrayList<>();
         
